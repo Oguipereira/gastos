@@ -63,13 +63,20 @@ export type PlanRow = {
   itemExpenses: number
   living: number
   net: number
+  /** Entradas fixas (salário), que caem no fim do mês, depois das faturas. */
+  lateIncome: number
+  /** Saldo no aperto: depois das faturas e gastos do mês, antes do salário cair. */
+  low: number
+  /** Saldo no fim do mês, já com o salário. */
   balance: number
 }
 
 export type PlanResult = {
   rows: PlanRow[]
+  /** Pior saldo no aperto (antes do salário cair). */
   worst: { value: number; month: string | null }
-  outOfRedMonth: string | null // primeiro mês com saldo >= 0 depois do pior ponto negativo
+  /** Primeiro mês, depois do pior ponto, em que nem no aperto o saldo fica negativo. */
+  outOfRedMonth: string | null
   goalMonth: string | null
 }
 
@@ -87,11 +94,15 @@ export function computePlan(
   for (let i = 0; i < settings.plan_months; i++) {
     const month = addMonths(start, i)
     let income = 0
+    let lateIncome = 0
     let itemExpenses = 0
     for (const it of items) {
       const v = itemAmountFor(it, month)
-      if (it.kind === 'income') income += v
-      else itemExpenses += v
+      if (it.kind === 'income') {
+        income += v
+        // entrada fixa (todo mês) = salário, que cai no fim do mês
+        if (it.months === null) lateIncome += v
+      } else itemExpenses += v
     }
     const billsByCard: Record<number, number> = {}
     let billTotal = 0
@@ -102,19 +113,20 @@ export function computePlan(
       billTotal += v
     }
     const net = income - billTotal - itemExpenses - living
+    const low = balance + (income - lateIncome) - billTotal - itemExpenses - living
     balance += net
-    rows.push({ month, income, bills: billTotal, billsByCard, itemExpenses, living, net, balance })
+    rows.push({ month, income, bills: billTotal, billsByCard, itemExpenses, living, net, lateIncome, low, balance })
   }
 
   let worst = { value: 0, month: null as string | null }
   rows.forEach((r) => {
-    if (r.balance < worst.value) worst = { value: r.balance, month: r.month }
+    if (r.low < worst.value) worst = { value: r.low, month: r.month }
   })
 
   let outOfRedMonth: string | null = null
   if (worst.month) {
     const wi = rows.findIndex((r) => r.month === worst.month)
-    const hit = rows.slice(wi + 1).find((r) => r.balance >= 0)
+    const hit = rows.slice(wi + 1).find((r) => r.low >= 0)
     outOfRedMonth = hit ? hit.month : null
   }
 

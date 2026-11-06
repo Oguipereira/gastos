@@ -38,14 +38,19 @@ describe('computePlan', () => {
   const { settings, items, cards, bills } = fixture()
   const plan = computePlan(settings, items, cards, bills)
 
-  it('calcula a sobra e o acumulado mês a mês', () => {
+  it('calcula a sobra e o saldo de fim de mês', () => {
     expect(plan.rows.map((r) => r.net)).toEqual([-100, -1200, 900, 1600, 1600, 1600])
     expect(plan.rows.map((r) => r.balance)).toEqual([900, -300, 600, 2200, 3800, 5400])
   })
 
-  it('encontra o pior ponto, a saída do vermelho e a meta', () => {
-    expect(plan.worst).toEqual({ value: -300, month: '2027-02-01' })
-    expect(plan.outOfRedMonth).toBe('2027-03-01')
+  it('o saldo no aperto não conta o salário, que cai no fim do mês', () => {
+    expect(plan.rows.map((r) => r.low)).toEqual([-1100, -2300, -1400, 200, 1800, 3400])
+    expect(plan.rows[0].lateIncome).toBe(2000)
+  })
+
+  it('pior ponto e saída do vermelho usam o aperto; a meta usa o fim do mês', () => {
+    expect(plan.worst).toEqual({ value: -2300, month: '2027-02-01' })
+    expect(plan.outOfRedMonth).toBe('2027-04-01')
     expect(plan.goalMonth).toBe('2027-06-01')
   })
 
