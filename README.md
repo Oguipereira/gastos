@@ -15,6 +15,7 @@ App web instalável (PWA) para quem vive com o orçamento apertado: registra cad
 - **Limite semanal por categoria.** Cada gasto entra numa categoria com teto próprio; a tela inicial mostra o que sobra até domingo. Categorias como "viagem" podem ficar fora do limite e funcionar como orçamento total.
 - **Plano até a meta.** Junta salário, rendas extras, faturas de cada cartão, parcelas e custo de vida para calcular a sobra de cada mês, o **pior ponto** do saldo, o mês em que ele **volta ao positivo** e quando a **meta** é atingida.
 - **Simulador de fatura.** No dia do fechamento, estima o dinheiro disponível (considerando faturas que vencem antes), mostra se falta dinheiro e calcula entrada, parcelas e juros pela tabela Price. Com um toque, o parcelamento escolhido entra no plano.
+- **Aba "Entenda".** Explica o plano em linguagem simples, gerada a partir dos próprios números: por que o pior mês é o pior, quanto precisa ser coberto e o efeito de cada estratégia (cortar o limite semanal, reduzir um gasto pontual, renda extra), recalculando o plano para cada uma.
 - **Tudo editável.** Saldo, salário, cartões, faturas mês a mês, compromissos, categorias e meta são configuráveis; o plano recalcula na hora.
 - **Feito para celular.** Instala na tela inicial do iPhone/Android, respeita a área segura da tela e usa alvos de toque de 44 px.
 
@@ -34,6 +35,8 @@ App web instalável (PWA) para quem vive com o orçamento apertado: registra cad
 src/
   lib/
     plan.ts        # regras de negócio puras: plano mensal, semana, parcela (testadas)
+    cashflow.ts    # linha do tempo do mês: faturas na ordem de vencimento
+    insights.ts    # explicações e estratégias com o efeito recalculado
     cards.ts       # próximo fechamento e mês da fatura
     data.ts        # acesso ao Supabase (carregar, inserir, atualizar, apagar)
     seed.ts        # dados de exemplo fictícios e configuração inicial
@@ -83,11 +86,11 @@ npm run build
 Para cada mês do plano:
 
 ```
-sobra = entradas − faturas dos cartões − compromissos − custo de vida
-acumulado = saldo inicial + soma das sobras até o mês
+no aperto  = fim do mês anterior + entradas únicas − faturas − compromissos − custo de vida
+fim do mês = no aperto + salário (entradas fixas caem no fim do mês)
 ```
 
-O custo de vida é o limite semanal × 4. Parcelas usam a tabela Price: `P · i / (1 − (1 + i)^−n)`.
+O custo de vida é o limite semanal × 4. O pior ponto e a saída do vermelho usam o saldo **no aperto**, porque as faturas vencem antes de o salário cair. Parcelas usam a tabela Price: `P · i / (1 − (1 + i)^−n)`.
 
 ## Próximos passos
 

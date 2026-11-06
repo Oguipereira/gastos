@@ -24,6 +24,7 @@ export function Plan({ data }: { data: AppData }) {
         <h1 className="display page-title">Plano</h1>
         <span className="subtitle">Quanto sobra ou falta, mês a mês{goal > 0 ? ', até a meta' : ''}</span>
       </header>
+      <a href="#entenda" className="notice" style={{ textDecoration: 'none', display: 'block' }}>Não entendeu algum número? Veja a explicação e as estratégias na aba <strong>Entenda</strong> →</a>
 
       <div className="grid3">
         <div className="tile" style={{ background: plan.worst.month ? 'var(--warn-soft)' : 'var(--card)', color: plan.worst.month ? 'var(--warn-ink)' : undefined }}>

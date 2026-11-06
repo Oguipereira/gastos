@@ -34,7 +34,10 @@ export function Home({ data, today }: { data: AppData; today: Date }) {
           <span className="small muted" style={{ fontSize: 13 }}>{longToday(today)}</span>
           <h1 className="display page-title">{settings.display_name ? `Oi, ${settings.display_name}` : 'Oi!'}</h1>
         </div>
-        <span className="chip-date">Semana {dayLabel(week.start)}–{dayLabel(week.end)}</span>
+        <div className="row" style={{ gap: 8 }}>
+          <span className="chip-date">Semana {dayLabel(week.start)}–{dayLabel(week.end)}</span>
+          <a href="#ajustes" className="icon-btn" aria-label="Ajustes" style={{ color: 'var(--ink)', border: 'none', background: 'var(--card)' }}><Icon.gear /></a>
+        </div>
       </header>
 
       <section className="card hero" aria-label="Limite da semana">
@@ -78,7 +81,7 @@ export function Home({ data, today }: { data: AppData; today: Date }) {
             <span style={{ fontSize: 15, fontWeight: 600 }}>{settings.goal_name}</span>
             <span className="muted" style={{ fontSize: 13 }}>meta {brl(goal)}</span>
           </div>
-          <Progress value={Math.max(0, curRow?.balance ?? 0)} max={goal} />
+          <Progress value={inRed ? 0 : Math.max(0, curRow?.balance ?? 0)} max={goal} />
           <div className="grid3 small muted">
             <div className="col" style={{ gap: 2 }}>
               <span>Agora</span>
@@ -93,6 +96,7 @@ export function Home({ data, today }: { data: AppData; today: Date }) {
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{plan.goalMonth ? monthLabel(plan.goalMonth) : `depois de ${monthLabel(addMonths(settings.plan_start, settings.plan_months - 1))}`}</span>
             </div>
           </div>
+          <a href="#entenda" style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none', minHeight: 44, display: 'flex', alignItems: 'center' }}>Entenda o seu plano e veja estratégias →</a>
         </section>
       )}
 

@@ -8,12 +8,13 @@ import type { AppData } from './lib/types'
 import { Auth } from './screens/Auth'
 import { Bill } from './screens/Bill'
 import { Expenses } from './screens/Expenses'
+import { Explain } from './screens/Explain'
 import { Home } from './screens/Home'
 import { Plan } from './screens/Plan'
 import { Register } from './screens/Register'
 import { SettingsScreen } from './screens/Settings'
 
-const ROUTES: Route[] = ['inicio', 'plano', 'registrar', 'fatura', 'ajustes', 'gastos']
+const ROUTES: Route[] = ['inicio', 'plano', 'registrar', 'fatura', 'entenda', 'ajustes', 'gastos']
 const readRoute = (): Route => {
   const h = window.location.hash.replace('#', '') as Route
   return ROUTES.includes(h) ? h : 'inicio'
@@ -93,6 +94,7 @@ function Main({ email }: { email: string }) {
         {route === 'plano' && <Plan data={data} />}
         {route === 'registrar' && <Register data={data} today={today} reload={reload} />}
         {route === 'fatura' && <Bill data={data} today={today} reload={reload} notify={notify} />}
+        {route === 'entenda' && <Explain data={data} />}
         {route === 'ajustes' && <SettingsScreen data={data} reload={reload} notify={notify} email={email} />}
         {route === 'gastos' && <Expenses data={data} reload={reload} notify={notify} />}
       </main>
