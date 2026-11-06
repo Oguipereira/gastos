@@ -52,7 +52,7 @@ export function SettingsScreen({ data, reload, notify, email }: Props) {
       <h2 className="section-title">Entradas e compromissos</h2>
       <p className="small muted" style={{ margin: '0 4px' }}>Salário, renda extra, parcelas fora da fatura e gastos únicos (ex.: viagem). Deixe "meses" vazio para "todo mês".</p>
       <section className="card tight">
-        {items.map((it) => <ItemRow key={it.id} item={it} run={run} />)}
+        {items.map((it) => <ItemRow key={it.id} item={it} run={run} planStart={settings.plan_start} planMonths={settings.plan_months} />)}
         <div className="row" style={{ gap: 16 }}>
           <button type="button" className="btn ghost" onClick={() => run(() => insertRow('plan_items', { kind: 'income', name: 'Nova entrada', amount: 0, start_month: settings.plan_start, months: 1 }))}>+ Entrada</button>
           <button type="button" className="btn ghost" onClick={() => run(() => insertRow('plan_items', { kind: 'expense', name: 'Novo gasto', amount: 0, start_month: settings.plan_start, months: 1 }))}>+ Gasto ou parcela</button>
@@ -92,8 +92,11 @@ export function SettingsScreen({ data, reload, notify, email }: Props) {
   )
 }
 
-function ItemRow({ item, run }: { item: PlanItem; run: (fn: () => Promise<unknown>) => Promise<void> }) {
+function ItemRow({ item, run, planStart, planMonths }: { item: PlanItem; run: (fn: () => Promise<unknown>) => Promise<void>; planStart: string; planMonths: number }) {
   const up = (patch: Record<string, unknown>) => run(() => updateRow('plan_items', item.id, patch))
+  const planEnd = addMonths(planStart, planMonths - 1)
+  const lastMonth = item.months === null ? null : addMonths(item.start_month, item.months - 1)
+  const outside = (lastMonth !== null && lastMonth < planStart) || item.start_month > planEnd
   return (
     <div className="edit-row">
       <div className="row" style={{ gap: 8 }}>
@@ -110,6 +113,12 @@ function ItemRow({ item, run }: { item: PlanItem; run: (fn: () => Promise<unknow
         <AutoField label="Meses" compact type="number" placeholder="todo mês" value={item.months} onSave={(v) => up({ months: v.trim() === '' ? null : Math.max(1, Math.round(parseMoney(v))) })} />
       </div>
       <AutoField compact ariaLabel="Observação" placeholder="observação (opcional)" value={item.note} onSave={(v) => up({ note: v })} />
+      {outside && (
+        <div className="alert" role="alert">
+          Fora do período do plano ({monthLabel(planStart)} a {monthLabel(planEnd)}), então não está sendo contado.
+          {item.kind === 'income' && lastMonth !== null && lastMonth < planStart ? ` Dinheiro que cai no fim de ${monthLabel(item.start_month)} serve para as faturas de ${monthLabel(planStart)}: coloque "A partir de" em ${monthLabel(planStart)}.` : ''}
+        </div>
+      )}
     </div>
   )
 }
